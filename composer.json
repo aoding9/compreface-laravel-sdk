@@ -1,0 +1,38 @@
+{
+    "name": "aoding9/compreface-laravel-sdk",
+    "description": "基于Laravel对CompreFace的部分接口进行封装",
+    "license": "Apache-2.0",
+    "type": "library",
+    "authors": [
+        {
+            "name": "aoding9",
+            "email": "xy5217733@163.com"
+        }
+    ],
+    "require": {
+        "laravel/framework": ">=5.5",
+        "php": ">=7.1.0",
+        "guzzlehttp/guzzle": "^7.8"
+    },
+    "minimum-stability": "dev",
+    "autoload": {
+        "psr-4": {
+            "Aoding9\\CompreFace\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Aoding9\\CompreFace\\CompreFaceServiceProvider"
+            ]
+        }
+    },
+    "scripts": {
+    },
+    "scripts-descriptions": {
+    }
+}
