@@ -20,7 +20,7 @@ class CompreFaceServiceProvider extends ServiceProvider {
 
         // 注册单例到容器，把config传进去
         $this->app->singleton(CompreFace::class, function($app) {
-            return new CompreFace(config('compreFace'));
+            return new CompreFace(config('compreFace.server'),config('compreFace.port'),config('compreFace.options'));
         });
 
         // 注册别名

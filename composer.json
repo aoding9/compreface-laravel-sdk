@@ -10,8 +10,8 @@
         }
     ],
     "require": {
-        "laravel/framework": ">=5.5",
-        "php": ">=7.1.0",
+        "laravel/framework": ">=8",
+        "php": ">=7.4",
         "guzzlehttp/guzzle": "^7.8"
     },
     "minimum-stability": "dev",
