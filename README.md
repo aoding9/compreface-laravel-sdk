@@ -1,6 +1,8 @@
-# CompreFace JavaScript SDK
+# CompreFace Laravel SDK
 
-CompreFace JavaScript SDK makes face recognition into your application even easier.
+CompreFace Laravel SDK makes face recognition into your application even easier.
+
+> 注意：本sdk是根据[compreface-javascript-sdk](https://github.com/exadel-inc/compreface-javascript-sdk)开发的laravel版本，仅做封装，将js改为laravel的写法，文档后半部分demo代码仍为js语法，参考前面即可
 
 # Table of content
 - [Requirements](#requirements)
@@ -45,12 +47,9 @@ Before using our SDK make sure you have installed CompreFace and Nodejs on your 
 
 ## CompreFace compatibility matrix
 
-| CompreFace JS SDK version | CompreFace 0.4.x | CompreFace 0.5.x | CompreFace 0.6.x | CompreFace 1.0.x |
-|---------------------------|------------------|------------------|------------------|------------------|
-| 0.4.1                     | ✔                | ✘                | ✘                | ✘                |
-| 0.5.x                     | ✘                | ✔                | :yellow_circle:  | :yellow_circle:  |
-| 0.6.x                     | ✘                | :yellow_circle:  | ✔                | :yellow_circle:  |
-| 1.0.x                     | ✘                | :yellow_circle:  | :yellow_circle:  | ✔                |
+| CompreFace Laravel SDK version | CompreFace 0.4.x | CompreFace 0.5.x | CompreFace 0.6.x | CompreFace 1.0.x |
+|--------------------------------|------------------|------------------|------------------|------------------|
+| 1.0.x                          | ✘                | :yellow_circle:  | :yellow_circle:  | ✔                |
 
 Explanation:
 
@@ -60,80 +59,84 @@ Explanation:
 * ✘ There are major backward compatibility issues. It is not recommended to use these versions together
 
 # Installation
-To add CompreFace JS SDK to your project, run the following command in the project folder:
+To add CompreFace Laravel SDK to your project, run the following command in the project folder:
 
-```npm i @exadel/compreface-js-sdk```
+> composer require aoding9/compreface-laravel-sdk
 
 
 # Usage
 
 ## Initialization
 
-To start using JavaScript SDK you need to import `CompreFace` object from 'compreface-js-sdk' dependency.
+To start using Laravel SDK you need to publish the SDK config file:
 
-Then you need to init it with `url` and `port`. By default, if you run CompreFace on your local machine, it's `http://localhost` and `8000` respectively.
+> php artisan vendor:publish --provider="Aoding9\CompreFace\CompreFaceServiceProvider"
+
+Then you need to set `url` and `port` in `config/compreFace.php` or in `.env` file`. By default, if you run CompreFace on your local machine, it's `http://localhost` and `8000` respectively.
 You can pass optional `options` object when creating CompreFace to set default parameters, see reference for [more information](#compreface-global-object).
+
+```dotenv
+# .env
+COMPRE_FACE_SEVER=http://localhost
+COMPRE_FACE_PORT=8000
+```
 
 After you initialized `CompreFace` object you need to init the service object with the `api key` of your face service. You can use this service object to recognize faces.
 
 However, before recognizing you need first to add faces into the face collection. To do this, get the face collection object from the service object.
 
-```javascript
-import { CompreFace } from 'compreface-js-sdk';
+```php
+use Aoding9\CompreFace\CompreFace;
 
-let api_key = "your_key";
-let url = "http://localhost";
-let port = 8000;
+$compreFace = app(CompreFace::class);
+$recognitionService = $compreFace->initFaceRecognitionService($api_key); // initialize service
 
-let compreFace = new CompreFace(url, port); // set CompreFace url and port 
-let recognitionService = compreFace.initFaceRecognitionService(api_key); // initialize service
-let faceCollection = recognitionService.getFaceCollection(); // use face collection to fill it with known faces
-let subjects = recognitionService.getSubjects(); // use subjects object to work with subjects directely
+$faceCollection = $recognitionService->getFaceCollection(); // use face collection to fill it with known faces
+$list = $faceCollection->list();
+
+$subjects = $recognitionService->getSubjects(); // use subjects object to work with subjects directely
+
+$path_to_image = public_path("uploads/images/wujing2.jpg");
+
+$options = [
+    'limit'              => 0,
+    //'det_prob_threshold' => 0.8,
+    //'prediction_count'   => 1,
+    //'face_plugins'       => "calculator,age,gender,landmarks",
+    //'status'             => "true",
+];
+
+$recognize = $recognitionService->recognize($path_to_image, $options);
+dd($recognize['result'][0]['subjects'][0]['subject'] ?? $recognize); // 0.98546;
 ```
 
 ## Adding faces into a face collection
 
-Here is JavaScript code example that shows how to add an image to your face collection from your file system:
+Here is Laravel code example that shows how to add an image to your face collection from your file system:
 
-```javascript
-let path_to_image = "../images/boy.jpg";
-let name = encodeURIComponent('Tom');
-
-faceCollection.add(path_to_image, name)
-    .then(response => {
-        // your code
-    })
-    .catch(error => {
-        console.log(`Oops! There is problem in uploading image ${error}`)
-    })
+```php
+$path_to_image = public_path("images/boy.jpg");
+$name ='Tom';
+$faceCollection->add($path_to_image, $name);
 ```
 
 ## Recognition
 
 This code snippet shows how to recognize unknown face:
 
-```javascript
-let path_to_image = "../images/team.jpg";
+```php
+$path_to_image = public_path("images/boy.jpg");
 
-recognitionService.recognize(path_to_image)
-    .then(response => {
-        console.log(JSON.stringify(response));
-    })
-    .catch(error => {
-        console.log(`Oops! There is problem with recognizing image ${error}`)
-    })
+$recognitionService->recognize($path_to_image);
 ```
 
 ## Environments
-NOTE: We provide 3 ways of uploading image to our SDK. They are url, blob and relative path (from local machine).
+NOTE: We provide 3 ways of uploading image to our SDK. They are url, blob and **absolute path** (from local machine).
 
 | Enviroments | from URL | with Blob format | from local machine |
 |-------------|----------|------------------|--------------------|
 | Browser     | ✔        | ✔                | ✘                  |
-| Nodejs      | ✔        | ✔                | ✔                  |
-
-## Webcam demo
-[Documentation is here](/webcam_demo)
+| Laravel     | ✔        | ✔                | ✔                  |
 
 # Reference
 
@@ -165,18 +168,18 @@ Possible options:
 
 Example:
 
-```js
-let server = "http://localhost";
-let port = 8000;
-let options = {
-  limit: 0, 
-  det_prob_threshold: 0.8, 
-  prediction_count: 1,
-  face_plugins: "calculator,age,gender,landmarks",
-  status: "true"
-}
+```php
+$server = "http://localhost";
+$port = 8000;
+$options = [
+  'limit'=> 0, 
+  'det_prob_threshold'=> 0.8, 
+  'prediction_count'=> 1,
+  'face_plugins'=> "calculator,age,gender,landmarks",
+  'status'=> "true"
+];
 
-let compreFace = new CompreFace(server, port, options);
+$compreFace = new CompreFace(server, port, options);
 ```
 
 ### Methods
@@ -191,7 +194,7 @@ Inits face recognition service object.
 
 Example:
 
-```js
+```php
 let recognitionService = compreFace.initFaceRecognitionService(api_key);
 ```
 
@@ -205,7 +208,7 @@ Inits face detection service object.
 
 Example:
 
-```js
+```php
 let detectionService = compreFace.initFaceDetectionService(api_key);
 ```
 
@@ -219,7 +222,7 @@ Inits face verification service object.
 
 Example:
 
-```js
+```php
 let verificationService = compreFace.initFaceVerificationService(api_key);
 ```
 
@@ -320,23 +323,17 @@ Response:
 
 Example:
 
-```javascript
-let image_location = "../images/team.jpg";
-let options = {
-    limit: 0,
-    det_prob_threshold: 0.8,
-    prediction_count: 1,
-    face_plugins: "calculator,age,gender,landmarks",
-    status: "true"
+```php
+$image_location = public_path("images/team.jpg");
+$options = {
+    'limit'=> 0,
+    'det_prob_threshold'=> 0.8,
+    'prediction_count'=> 1,
+    'face_plugins'=> "calculator,age,gender,landmarks",
+    'status'=> "true"
 }
 
-recognitionService.recognize(image_location, options)
-    .then(response => {
-        console.log(JSON.stringify(response));
-    })
-    .catch(error => {
-        console.log(`Oops! There is problem with recognizing image ${error}`)
-    })
+$recognitionService->recognize($image_location, $options)
 ```
 
 ### Get Face Collection
@@ -387,20 +384,14 @@ Response:
 
 Example:
 
-```javascript
-let image_location = "../images/boy.jpg";
-let name = encodeURIComponent('Tom');
-let options = {
-    det_prob_threshold: 0.8
-}
+```php
+$image_location = public_path("images/boy.jpg");
+$name = 'Tom';
+$options = [
+    'det_prob_threshold'=> 0.8
+];
 
-faceCollection.add(image_location, name, options)
-    .then(response => {
-        console.log(JSON.stringify(response));
-    })
-    .catch(error => {
-        console.log(`Oops! There is problem in uploading image ${error}`)
-    })
+$faceCollection->add($image_location, $name, $options);
 ```
 
 #### List of All Saved Examples of the Subject
