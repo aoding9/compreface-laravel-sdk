@@ -53,7 +53,6 @@ class CommonEndpoints {
      * @throws RequestException
      */
     public static function upload_path($image_path, $url, $api_key) {
-        // 执行完回调之后，删除临时文件
         $res = Http::attach('file', $file = fopen($image_path, 'r'), self::getFileName($image_path))
                    ->withHeaders([
                                      "x-api-key" => $api_key,

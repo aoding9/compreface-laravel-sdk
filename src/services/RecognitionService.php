@@ -1,13 +1,8 @@
 <?php
 namespace Aoding9\CompreFace\services;
 
-// import { recognition_endpoints } from '../endpoints/recognition_endpoints.js';
-// import { common_functions } from '../functions/index.js';
-// import { subject_endpoints } from '../endpoints/subject_endpoints.js';
-// import { upload } from '../endpoints/upload.js';
 
 use Aoding9\CompreFace\models\FaceCollection;
-use Aoding9\CompreFace\endpoints\RecognitionEndpoints;
 use Aoding9\CompreFace\models\Subject;
 
 class RecognitionService extends BaseService {
