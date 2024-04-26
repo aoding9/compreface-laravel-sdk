@@ -38,7 +38,7 @@ class Subject {
      */
     public function rename($presentSubjectName, $newSubjectName) {
         $url = $this->url;
-        $url = `${url}/${presentSubjectName}`;
+        $url = "${url}/${presentSubjectName}";
         return SubjectEndpoints::rename($newSubjectName, $url, $this->key);
     }
 
@@ -47,7 +47,7 @@ class Subject {
      */
     public function delete($subject) {
         $url = $this->url;
-        $url = `${url}/${subject}`;
+        $url = "${url}/${subject}";
         return SubjectEndpoints::deleteSubject($url, $this->key);
     }
 

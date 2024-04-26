@@ -15,7 +15,7 @@ class RecognitionService extends BaseService {
     protected $faceCollection;
     protected $subject;
 
-    public function __constructor($server, $port, $options, $key) {
+    public function __construct($server, $port, $options, $key) {
         parent::__construct($server, $port, $options, $key);
         $this->base_url = 'api/v1/recognition/faces';
         $this->recognize_base_url = "api/v1/recognition/recognize";
@@ -24,7 +24,7 @@ class RecognitionService extends BaseService {
     /**
      * Recognize face(s) from given image
      */
-    public function recognize($image_path, $options) {
+    public function recognize($image_path, $options=[]) {
         // add_options_to_url() adds this parameter to url if user passes some value as option otherwise function ignores this parameter
         $required_url_parameters = [
             'limit'              => true,
@@ -34,7 +34,7 @@ class RecognitionService extends BaseService {
             'status'             => true,
         ];
 
-        if (!array_key_exists('limit', $options)) {
+        if (!isset( $options['limit'])) {
             $options ['limit'] = 0;
         }
 
@@ -53,8 +53,10 @@ class RecognitionService extends BaseService {
         if ($this->faceCollection) {
             return $this->faceCollection;
         }
+
         $url = $this->get_full_url($this->base_url, $this->server, $this->port);
         $key = $this->key;
+
         return $this->faceCollection = new FaceCollection($this, $url, $key);
     }
 
@@ -62,7 +64,7 @@ class RecognitionService extends BaseService {
         if ($this->subject) {
             return $this->subject;
         }
-        $base_subject_url = preg_replace('faces', 'subjects', $this->base_url);
+        $base_subject_url = str_replace('faces', 'subjects', $this->base_url);
         $url = $this->get_full_url($base_subject_url, $this->server, $this->port);
         $key = $this->key;
         return $this->subject = new Subject($this, $url, $key);

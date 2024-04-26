@@ -38,7 +38,7 @@ class FaceCollection {
 
         // add parameters to basic url
         $url = $this->service->get_full_url($this->service->base_url, $this->service->server, $this->service->port);
-        $url = `${url}?subject=${subject}`;
+        $url = "${url}?subject=${subject}";
         $url = $this->service->add_options_to_url($url, $this->service->options, $options, $required_url_parameters);
 
         return $this->service->upload($image_path, $url, $this->service->key);
@@ -58,7 +58,7 @@ class FaceCollection {
 
         // add parameters to basic url
         $url = $this->url;
-        $url = `${$url}/${image_id}/verify`;
+        $url = "${$url}/${image_id}/verify";
         $url = $this->service->add_options_to_url($url, $this->service->options, $options, $required_url_parameters);
 
         return $this->service->upload($image_path, $url, $this->service->key);
@@ -70,7 +70,7 @@ class FaceCollection {
     public function delete($image_id) {
         $url = $this->url;
 
-        $url = `${url}/${image_id}`;
+        $url = "${url}/${image_id}";
 
         return RecognitionEndpoints::delete_request($url, $this->service->key);
     }
@@ -81,7 +81,7 @@ class FaceCollection {
     public function delete_multiple_images($image_ids) {
         $url = $this->url;
 
-        $url = `${url}/delete`;
+        $url = "${url}/delete";
 
         return
             RecognitionEndpoints::delete_multiple($url, $this->service->key, $image_ids);
@@ -93,7 +93,7 @@ class FaceCollection {
     public function delete_all_subject($subject) {
         $url = $this->url;
 
-        $url = `${url}?subject=${subject}`;
+        $url = "${url}?subject=${subject}";
 
         return
             RecognitionEndpoints::delete_request($url, $this->service->key);

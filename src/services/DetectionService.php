@@ -2,7 +2,7 @@
 namespace Aoding9\CompreFace\services;
 
 class DetectionService extends BaseService {
-    public function __constructor($server, $port, $options, $key) {
+    public function __construct($server, $port, $options, $key) {
         parent::__construct($server, $port, $options, $key);
         $this->base_url = 'api/v1/detection/detect';
     }

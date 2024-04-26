@@ -3,10 +3,11 @@ namespace Aoding9\CompreFace\endpoints;
 
 // Collection of common endpoints that used by almost all services
 use Illuminate\Http\Client\RequestException;
+use Illuminate\Http\File;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
 
 class CommonEndpoints {
-
     /**
      * @param $base64string
      * @param $url
@@ -18,7 +19,6 @@ class CommonEndpoints {
         $data = [
             'file' => $base64string,
         ];
-
         return Http::asJson()
                    ->withHeaders([
                                      "x-api-key" => $api_key,
@@ -35,8 +35,7 @@ class CommonEndpoints {
      * @return array|mixed
      */
     public static function upload_blob($blobData, $url, $api_key) {
-
-        return Http::attach(['file',$blobData])
+        return Http::attach('file', $blobData)
                    ->withHeaders([
                                      "x-api-key" => $api_key,
                                  ])
@@ -54,13 +53,16 @@ class CommonEndpoints {
      * @throws RequestException
      */
     public static function upload_path($image_path, $url, $api_key) {
-        return Http::attach('file', file_get_contents($image_path))
+        // 执行完回调之后，删除临时文件
+        $res = Http::attach('file', $file = fopen($image_path, 'r'), self::getFileName($image_path))
                    ->withHeaders([
                                      "x-api-key" => $api_key,
                                  ])
                    ->post($url)
                    ->throw()
                    ->json();
+        fclose($file);
+        return $res;
     }
 
     /**
@@ -73,15 +75,30 @@ class CommonEndpoints {
      * @throws RequestException
      */
     public static function upload_url($image_url, $url, $api_key) {
-        $res = Http::get($image_url)->throw();
-        // $image_extention = preg_split('/', $res->header('content-type'))[1];
-        return Http::attach('file', $res->body())
+        // 将获取到的图片数据写入临时文件
+        $tempFile = static::writeTempFile($image_url);
+
+        $res = Http::attach('file', $file = fopen($tempFile, 'r'), static::getFileName($tempFile))
                    ->withHeaders([
                                      "x-api-key" => $api_key,
-                                     // todo:确定是否需要 "Content-Length": bodyFormData.getLengthSync(),
                                  ])
                    ->post($url)
                    ->throw()
                    ->json();
+        fclose($file);
+        unlink($tempFile);
+        return $res;
+    }
+
+    public static function getFileName($path) {
+        $extension = (new File($path))->extension();
+        return 'tmp' . '_' . time() . '_' . Str::random(10) . '.' . $extension;
+    }
+
+    public static function writeTempFile($url, $isBase64 = false) {
+        $imageData = $isBase64 ? $url : Http::get($url)->throw()->body();
+        $tempFile = tempnam(sys_get_temp_dir(), 'image');
+        file_put_contents($tempFile, $imageData);
+        return $tempFile;
     }
 }
