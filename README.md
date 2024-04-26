@@ -179,7 +179,7 @@ $options = [
   'status'=> "true"
 ];
 
-$compreFace = new CompreFace(server, port, options);
+$compreFace = new CompreFace($server, $port, $options);
 ```
 
 ### Methods

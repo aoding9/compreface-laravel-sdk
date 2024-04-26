@@ -1,6 +1,6 @@
 {
     "name": "aoding9/compreface-laravel-sdk",
-    "description": "基于Laravel对CompreFace的部分接口进行封装",
+    "description": "本sdk是根据compreface-javascript-sdk开发的laravel版本，仅做封装，将js改为laravel的写法，文档后半部分demo代码仍为js语法，参考前面即可",
     "license": "Apache-2.0",
     "type": "library",
     "authors": [
