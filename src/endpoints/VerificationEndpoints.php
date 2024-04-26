@@ -1,8 +1,5 @@
 <?php
 namespace Aoding9\CompreFace\endpoints;
-
-use Illuminate\Http\Client\Pool;
-use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 
 class VerificationEndpoints extends CommonEndpoints {

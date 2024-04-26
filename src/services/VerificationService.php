@@ -30,10 +30,8 @@ class VerificationService extends BaseService {
 
         $isSourceRelativePath = $this->isPathRelative($source_image_path);
         $isTargetRelativePath = $this->isPathRelative($target_image_path);
-// dd($isSourceImageUrl,$isTargetRelativePath);
         $isSourceBase64 = $this->isBase64($source_image_path);
         $isTargetBase64 = $this->isBase64($target_image_path);
-// dd($isSourceBase64,$isTargetBase64);
         // base64只有2种情况会处理
         // 1 两个都是base64
         // 2 source是blob，target是base64
@@ -59,7 +57,7 @@ class VerificationService extends BaseService {
             if ($isTargetImageUrl) {
                 throw new Exception('target为base64时，只有source为blob或base64才处理');
             } else if ($isTargetBase64) {
-                return VerificationEndpoints::base64_request($source_image_path,  $target_image_path, $url, $this->key);
+                return VerificationEndpoints::base64_request($source_image_path, $target_image_path, $url, $this->key);
             } else if ($isTargetRelativePath) {
                 throw new Exception('target为base64时，只有source为blob或base64才处理');
             }
@@ -75,6 +73,5 @@ class VerificationService extends BaseService {
             return VerificationEndpoints::blob_base64_request($source_image_path, true, $target_image_path, $url, $this->key);
         }
         return VerificationEndpoints::both_blob_request($source_image_path, $target_image_path, $url, $this->key);
-
     }
 }
