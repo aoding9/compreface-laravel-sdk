@@ -2,6 +2,7 @@
 namespace Aoding9\CompreFace\endpoints;
 
 // Collection of common endpoints that used by almost all services
+use Aoding9\CompreFace\Exceptions\Exception;
 use Illuminate\Http\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
@@ -105,13 +106,15 @@ class CommonEndpoints {
         try {
             $imageData = $isBase64 ? $url : Http::get($url)->throw()->body();
         } catch (\Exception $e) {
-            throw new \Aoding9\CompreFace\Exceptions\Exception('图片数据获取失败：' . $url);
+            throw new Exception('图片数据获取失败：' . $url);
         }
+
         try {
             $tempFile = tempnam(sys_get_temp_dir(), 'image');
             file_put_contents($tempFile, $imageData);
-        } finally {
+        } catch (\Exception $e) {
             $tempFile && unlink($tempFile);
+            throw $e;
         }
         return $tempFile;
     }
