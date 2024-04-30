@@ -2,30 +2,38 @@
 namespace Aoding9\CompreFace\endpoints;
 
 // Collection of common endpoints that used by almost all services
-use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 
 class CommonEndpoints {
+
+    /**
+     * @param $api_key
+     * @return \Illuminate\Http\Client\PendingRequest
+     * @Date 2024/4/30 10:18
+     */
+    public static function http($api_key) {
+        return Http::withHeaders([
+                                     "x-api-key" => $api_key,
+                                 ]);
+    }
+
     /**
      * @param $base64string
      * @param $url
      * @param $api_key
      * @return array|mixed
-     * @throws RequestException
      */
     public static function upload_base64($base64string, $url, $api_key) {
         $data = [
             'file' => $base64string,
         ];
-        return Http::asJson()
-                   ->withHeaders([
-                                     "x-api-key" => $api_key,
-                                 ])
-                   ->post($url, $data)
-                   ->throw()
-                   ->json();
+        return static::http($api_key)
+                     ->asJson()
+                     ->post($url, $data)
+                     ->throw()
+                     ->json();
     }
 
     /**
@@ -35,13 +43,11 @@ class CommonEndpoints {
      * @return array|mixed
      */
     public static function upload_blob($blobData, $url, $api_key) {
-        return Http::attach('file', $blobData)
-                   ->withHeaders([
-                                     "x-api-key" => $api_key,
-                                 ])
-                   ->post($url)
-                   ->throw()
-                   ->json();
+        return static::http($api_key)
+                     ->attach('file', $blobData)
+                     ->post($url)
+                     ->throw()
+                     ->json();
     }
 
     /**
@@ -50,17 +56,18 @@ class CommonEndpoints {
      * @param $url
      * @param $api_key
      * @return array|mixed
-     * @throws RequestException
      */
     public static function upload_path($image_path, $url, $api_key) {
-        $res = Http::attach('file', $file = fopen($image_path, 'r'), self::getFileName($image_path))
-                   ->withHeaders([
-                                     "x-api-key" => $api_key,
-                                 ])
-                   ->post($url)
-                   ->throw()
-                   ->json();
-        fclose($file);
+        try {
+            $res = static::http($api_key)
+                         ->attach('file', $file = fopen($image_path, 'r'), self::getFileName($image_path))
+                         ->post($url)
+                         ->throw()
+                         ->json();
+        } finally {
+            fclose($file);
+        }
+
         return $res;
     }
 
@@ -69,23 +76,23 @@ class CommonEndpoints {
      * @param        $image_url
      * @param        $url
      * @param        $api_key
-     * @param string $file_name
      * @return array|mixed
-     * @throws RequestException
      */
     public static function upload_url($image_url, $url, $api_key) {
         // 将获取到的图片数据写入临时文件
         $tempFile = static::writeTempFile($image_url);
+        $file = false;
+        try {
+            $res = static::http($api_key)
+                         ->attach('file', $file = fopen($tempFile, 'r'), static::getFileName($tempFile))
+                         ->post($url)
+                         ->throw()
+                         ->json();
+        } finally {
+            $file && fclose($file);
+            unlink($tempFile);
+        }
 
-        $res = Http::attach('file', $file = fopen($tempFile, 'r'), static::getFileName($tempFile))
-                   ->withHeaders([
-                                     "x-api-key" => $api_key,
-                                 ])
-                   ->post($url)
-                   ->throw()
-                   ->json();
-        fclose($file);
-        unlink($tempFile);
         return $res;
     }
 
@@ -95,9 +102,18 @@ class CommonEndpoints {
     }
 
     public static function writeTempFile($url, $isBase64 = false) {
-        $imageData = $isBase64 ? $url : Http::get($url)->throw()->body();
-        $tempFile = tempnam(sys_get_temp_dir(), 'image');
-        file_put_contents($tempFile, $imageData);
+        try {
+            $imageData = $isBase64 ? $url : Http::get($url)->throw()->body();
+        } catch (\Exception $e) {
+            throw new \Aoding9\CompreFace\Exceptions\Exception('图片数据获取失败：' . $url);
+        }
+        try {
+            $tempFile = tempnam(sys_get_temp_dir(), 'image');
+            file_put_contents($tempFile, $imageData);
+        } finally {
+            $tempFile && unlink($tempFile);
+        }
         return $tempFile;
     }
+
 }
